@@ -1,0 +1,7 @@
+{
+  "files.eol": "\n",
+  "[shellscript]": {
+    "editor.tabSize": 2,
+    "editor.insertSpaces": true
+  }
+}

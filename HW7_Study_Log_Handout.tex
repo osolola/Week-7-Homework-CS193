@@ -1,0 +1,124 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[margin=1in]{geometry}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{hyperref}
+\usepackage{titlesec}
+\usepackage{array}
+\usepackage{enumitem}
+\usepackage{amssymb}
+\usepackage{listings}
+\usepackage{xcolor}
+
+% Configuration for code snippets (shell/bash style)
+\lstset{
+    backgroundcolor=\color{gray!10},
+    basicstyle=\ttfamily\small,
+    breaklines=true,
+    frame=single,
+    rulecolor=\color{black!30},
+    keywordstyle=\color{blue},
+    commentstyle=\color{green!50!black}
+}
+
+% Hyperlink styling
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    urlcolor=blue,
+    citecolor=blue
+}
+
+% Title Formatting
+\titleformat{\section}{\normalfont\Large\bfseries}{}{0pt}{}
+\titleformat{\subsection}{\normalfont\large\bfseries}{}{0pt}{}
+
+% NOTE TO COURSE STAFF: Replace the Ed Discussion thread name in the
+% Submission section with the actual thread you want students posting to
+% before publishing.
+
+\begin{document}
+
+% --- HEADER SECTION ---
+\begin{center}
+    {\Huge \textbf{CS193}} \\
+    \vspace{2mm}
+    {\Large \textbf{Homework - Week 7}} \\
+\end{center}
+
+% --- INTRODUCTION ---
+\section{Introduction}
+In lecture you learned how to go beyond typing one command at a time and start \textbf{scripting} in bash. This week you'll put those skills to work by writing a small but genuinely useful tool: a \textbf{study-log helper}. Each time you run it, it records a timestamped study session for you and reports how many sessions you've logged so far.
+\\\\
+You only need \textbf{bash and a terminal} --- no other languages, no installs.
+\\\\
+We are giving you a working starter template. You are not writing the whole script from scratch. The scaffold is laid out with \texttt{TODO} comments, and each one points you to the exact lecture slide that shows the syntax you need. The goal is to leave with a script that runs and that cements variables, arguments, test operators, redirection, and command substitution. It should take about \textbf{15--20 minutes}.
+
+% --- GETTING STARTED ---
+\section{Getting Started: The Template}
+Open the \texttt{hw7-studylog} folder. It already has the structure and hints you need --- you just fill in the \texttt{TODO} sections.
+\begin{itemize}
+    \item \texttt{studylog.sh} --- the script you'll write. Look for \texttt{\# TODO} comments. Each one tells you what to add and names the lecture slide with the matching syntax.
+    \item \texttt{README.md} --- a quick reminder of how to make the script executable and run it.
+    \item \texttt{.vscode/} --- recommended extensions and settings. You don't need to touch this; it just makes editing shell scripts nicer.
+    \item \texttt{study\_log.txt} --- you won't see this at first. Your script \textit{creates} it the first time you run it.
+\end{itemize}
+
+% --- HOW TO RUN ---
+\section{How to Run Your Script}
+\subsection{Using VS Code}
+\begin{enumerate}
+    \item Open VS Code and go to \textbf{File \(\rightarrow\) Open Folder}, then select the \texttt{hw7-studylog} folder.
+    \item Open a terminal inside VS Code with \textbf{Terminal \(\rightarrow\) New Terminal}. It opens already pointed at your project folder.
+    \item Make the script executable (one time), then run it, passing your name:
+\begin{lstlisting}[language=bash]
+$ chmod +x studylog.sh
+$ ./studylog.sh Boiler
+Thanks Boiler! You have logged 1 study session(s).
+\end{lstlisting}
+    \item Run it a few more times and watch the count grow. Open \texttt{study\_log.txt} to see your entries.
+    \item Not using VS Code? The same idea applies in any terminal: \texttt{cd} into the \texttt{hw7-studylog} folder, then run the two commands above. No server, compiler, or installation is required --- it's plain bash.
+\end{enumerate}
+
+% --- WHAT TO FILL IN ---
+\section{What to Fill In}
+Work through the \texttt{TODO} comments in \texttt{studylog.sh} in order:
+\begin{enumerate}
+    \item \textbf{Shebang.} Keep \texttt{\#!/bin/bash} as the very first line (already done for you). It tells the OS which interpreter to use.
+    \item \textbf{Check for a name.} If the student runs the script with no argument, print a usage message and \textbf{exit with a non-zero code}. Hint: test with \texttt{-z "\$1"} inside an \texttt{if}.
+    \item \textbf{Use a variable.} Store the log file name in a variable, e.g. \texttt{LOGFILE="study\_log.txt"}. Remember: \textbf{no spaces} around the \texttt{=}.
+    \item \textbf{Append a timestamped entry.} Add a line such as \textit{\textless name\textgreater{} studied on \textless date\textgreater} to the log using \texttt{\$1}, command substitution \texttt{\$(date)}, and \texttt{>{}>} (append, \textbf{not} \texttt{>}, which would erase the file each run).
+    \item \textbf{Count and report.} Use \texttt{wc -l} to count the lines in the log, then print a message with the total.
+\end{enumerate}
+\textbf{Optional stretch (not required for full credit):} add an \texttt{if} with the \texttt{-ge} test operator that prints an encouraging message once you've logged 3 or more sessions, and a \texttt{for} loop that lists your existing entries.
+
+% --- SUBMITTING ---
+\section{How to Submit}
+\begin{enumerate}
+    \item Run your script at least twice so \texttt{study\_log.txt} has entries in it.
+    \item Zip your \texttt{hw7-studylog} folder, with your finished \texttt{studylog.sh} and the \texttt{study\_log.txt} it produced included:
+    \begin{itemize}
+        \item \textbf{Windows:} Right-click the \texttt{hw7-studylog} folder \(\rightarrow\) \textbf{Send to} \(\rightarrow\) \textbf{Compressed (zipped) folder}.
+        \item \textbf{Mac:} Right-click the \texttt{hw7-studylog} folder \(\rightarrow\) \textbf{Compress ``hw7-studylog''}.
+    \end{itemize}
+    \item Go to Ed Discussion and open the \textbf{Week 7} submission thread.
+    \item Create a new post, attach your zipped folder, and submit.
+\end{enumerate}
+
+% --- CHECKLIST ---
+\section{Checklist Before You're Done}
+\begin{itemize}
+    \item \texttt{\#!/bin/bash} is still the first line of the script - 10\%
+    \item Running with no name prints a usage message and exits non-zero - 20\%
+    \item The log file name is stored in a variable (no spaces around \texttt{=}) - 15\%
+    \item A timestamped entry is appended using \texttt{\$1}, \texttt{\$(date)}, and \texttt{>{}>} - 25\%
+    \item The total number of sessions is counted with \texttt{wc -l} and printed - 20\%
+    \item You ran the script at least twice and \texttt{study\_log.txt} shows your entries - 10\%
+\end{itemize}
+
+% --- GRADING ---
+\section{Grading}
+This assignment is graded on completion of the checklist above. Each item is worth the percentage listed next to it, and the items add up to 100\% of your grade on this assignment.
+
+\end{document}
