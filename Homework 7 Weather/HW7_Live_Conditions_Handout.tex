@@ -1,0 +1,159 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[margin=1in]{geometry}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{hyperref}
+\usepackage{titlesec}
+\usepackage{array}
+\usepackage{enumitem}
+\usepackage{amssymb}
+\usepackage{listings}
+\usepackage{xcolor}
+
+% Configuration for code snippets (shell/bash style)
+\lstset{
+    backgroundcolor=\color{gray!10},
+    showstringspaces=false,
+    basicstyle=\ttfamily\small,
+    breaklines=true,
+    frame=single,
+    rulecolor=\color{black!30},
+    keywordstyle=\color{blue},
+    commentstyle=\color{green!50!black}
+}
+
+% Hyperlink styling
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    urlcolor=blue,
+    citecolor=blue
+}
+
+% Title Formatting
+\titleformat{\section}{\normalfont\Large\bfseries}{}{0pt}{}
+\titleformat{\subsection}{\normalfont\large\bfseries}{}{0pt}{}
+
+% NOTE TO COURSE STAFF: Replace the Ed Discussion thread name in the
+% Submission section with the actual thread you want students posting to
+% before publishing.
+
+\begin{document}
+
+% --- HEADER SECTION ---
+\begin{center}
+    {\Huge \textbf{CS193}} \\
+    \vspace{2mm}
+    {\Large \textbf{Homework - Week 7}} \\
+\end{center}
+
+% --- INTRODUCTION ---
+\section{Introduction}
+This week you'll write a real, non-trivial bash script that works with \textbf{live data}. Your script builds a small \textbf{conditions dashboard} for \textbf{both Purdue campuses} --- West Lafayette and Indianapolis. For each one it fetches the current weather and air quality from two free web APIs, reads the \textbf{JSON}, reports today's \textbf{temperature pattern} (high, low, and how many hours are ``hot''), and logs every reading to a CSV so the data builds up over time.
+\\\\
+You'll pull together most of the term's bash toolkit on genuine data: a reusable \texttt{function}, \texttt{for} loops over an array of locations \textit{and} over hourly forecast values, variables and \texttt{\$( )}, two \texttt{if}/\texttt{elif}/\texttt{else} decision ladders, error handling with exit codes, and saving output with \texttt{>{}>}. To read the JSON you'll use \texttt{jq}, the standard command-line JSON tool --- on single values \textbf{and} on arrays.
+\\\\
+We give you a working template with the campuses, URLs, function skeletons, and a \texttt{jq} guide already in place. You fill in the \texttt{TODO} sections. Every API is \textbf{free and needs no account or API key}. Plan on about \textbf{one hour}.
+
+% --- GETTING STARTED ---
+\section{Getting Started: The Template}
+Open the \texttt{hw7-conditions} folder. The scaffolding and hints are ready --- you fill in the \texttt{TODO} sections.
+\begin{itemize}
+    \item \texttt{conditions.sh} --- the script you'll write. Look for \texttt{\# TODO} comments; each names the lecture slide with the matching syntax. The top of the file has a \texttt{jq} guide covering single values \textbf{and} arrays.
+    \item \texttt{README.md} --- setup, run instructions, and example output.
+    \item \texttt{.vscode/} --- optional editor settings; safe to ignore if your editor doesn't use them.
+    \item \texttt{conditions\_report.txt} and \texttt{conditions\_log.csv} --- created by your script when it runs (a readable report and a growing CSV history).
+\end{itemize}
+
+\subsection{One-Time Setup: Install \texttt{jq}}
+\texttt{jq} reads JSON from the command line. Install it once:
+\begin{lstlisting}[language=bash]
+macOS:          brew install jq
+Ubuntu/WSL:     sudo apt install jq
+Windows:        choco install jq      (or winget install jqlang.jq)
+Purdue "data":  already installed - just SSH in and go
+\end{lstlisting}
+Confirm with \texttt{jq --version}. New to \texttt{jq}? Here's the whole guide you need:
+\begin{lstlisting}[language=bash]
+echo "$json" | jq '.current.temperature_2m'        # one value
+echo "$json" | jq '.hourly.temperature_2m | max'   # array -> highest
+echo "$json" | jq '.hourly.temperature_2m | min'   # array -> lowest
+echo "$json" | jq -r '.hourly.temperature_2m[0:6][]'   # first 6, raw
+# count array items greater than a number N:
+echo "$json" | jq --argjson t 75 \
+    '[.hourly.temperature_2m[] | select(. > $t)] | length'
+\end{lstlisting}
+
+% --- HOW TO RUN ---
+\section{How to Run Your Script}
+\subsection{Open It and Run}
+\begin{enumerate}
+    \item Open the \texttt{hw7-conditions} folder in whatever code editor you prefer, or just open a terminal and \texttt{cd} into it --- \textbf{any IDE or the terminal works}.
+    \item Make it executable (one time), then run it. You can pass a ``hot hour'' cutoff, or let it default to 75:
+\begin{lstlisting}[language=bash]
+$ chmod +x conditions.sh
+$ ./conditions.sh 80
+======================================================
+ Purdue Conditions Dashboard - Sat Aug  2 14:10:00 EDT 2026
+ (hot-hour cutoff: 80 F)
+======================================================
+----- West Lafayette -----
+Now:        81.5 F (Hot), humidity 58%
+Air:        AQI 42 (Good), PM2.5 9.1
+Today:      high 86.0 F / low 64.0 F, 8 hour(s) above 80 F
+Next 6 hrs:
+   64.0 F
+   ...
+----- Indianapolis -----
+   ...
+\end{lstlisting}
+    \item Numbers reflect the \textit{live} weather. Run it again and open \texttt{conditions\_log.csv} to watch the history grow. You need an internet connection for the fetch.
+\end{enumerate}
+
+% --- WHAT TO FILL IN ---
+\section{What to Fill In}
+Work through the \texttt{TODO} comments in \texttt{conditions.sh} in order:
+\begin{enumerate}
+    \item \textbf{Finish \texttt{get\_json}.} Make the helper \texttt{return 1} when the fetch fails (\texttt{\$?} is not 0) \textbf{or} the response is empty (\texttt{-z}).
+    \item \textbf{Fetch the air feed.} Inside \texttt{report\_for}, grab the air-quality URL into \texttt{air} using \texttt{get\_json}, failing with a message if it doesn't come back.
+    \item \textbf{Read the scalars.} Temperature is done for you. Pull \texttt{humidity}, \texttt{aqi}, and \texttt{pm25} with the right \texttt{.current.*} \texttt{jq} paths.
+    \item \textbf{Summarize the day (arrays).} Use \texttt{jq} on the hourly array to set \texttt{high} (\texttt{max}), \texttt{low} (\texttt{min}), and \texttt{hot} (count of hours above \texttt{\$THRESHOLD} --- see the \texttt{jq} guide).
+    \item \textbf{Categorize.} Two \texttt{if}/\texttt{elif}/\texttt{else} ladders: AQI (0--50 Good, 51--100 Moderate, 101+ Unhealthy) and temperature (\textless40 Cold, \textless60 Cool, \textless80 Mild, else Hot).
+    \item \textbf{Print the next 6 hours.} A \texttt{for} loop over the first six hourly temps, echoing each one indented.
+    \item \textbf{Log to CSV.} Append one row --- \texttt{date,name,temp,humidity,aqi,pm25} --- to \texttt{\$CSV} with \texttt{>{}>}.
+    \item \textbf{Loop over both campuses.} In \texttt{main}, \texttt{for} each entry in \texttt{LOCATIONS}, split it on \texttt{;} into \texttt{name}/\texttt{lat}/\texttt{lon} and call \texttt{report\_for}.
+\end{enumerate}
+\textbf{Optional stretch (not required for full credit):} add a third location, or print a one-line ``best campus to be outside right now'' verdict by comparing the two AQI values.
+
+% --- SUBMITTING ---
+\section{How to Submit}
+\begin{enumerate}
+    \item Run your script at least twice so \texttt{conditions\_log.csv} has several rows.
+    \item Zip your \texttt{hw7-conditions} folder, with your finished \texttt{conditions.sh}, \texttt{conditions\_report.txt}, and \texttt{conditions\_log.csv} included:
+    \begin{itemize}
+        \item \textbf{Windows:} Right-click the \texttt{hw7-conditions} folder \(\rightarrow\) \textbf{Send to} \(\rightarrow\) \textbf{Compressed (zipped) folder}.
+        \item \textbf{Mac:} Right-click the \texttt{hw7-conditions} folder \(\rightarrow\) \textbf{Compress ``hw7-conditions''}.
+    \end{itemize}
+    \item Go to Ed Discussion and open the \textbf{Week 7} submission thread.
+    \item Create a new post, attach your zipped folder, and submit.
+\end{enumerate}
+
+% --- CHECKLIST ---
+\section{Checklist Before You're Done}
+\begin{itemize}
+    \item \texttt{get\_json} returns non-zero on an empty or failed fetch - 10\%
+    \item The air feed is fetched with a failure guard - 10\%
+    \item Humidity, AQI, and PM2.5 are read with correct \texttt{jq} paths - 15\%
+    \item Today's high, low, and hot-hour count come from \texttt{jq} on the hourly array - 20\%
+    \item AQI \textbf{and} temperature are each categorized with \texttt{if}/\texttt{elif}/\texttt{else} - 15\%
+    \item The next 6 hours are printed with a \texttt{for} loop - 10\%
+    \item Each reading is appended to \texttt{conditions\_log.csv} - 10\%
+    \item \texttt{main} loops over \textbf{both} campuses (name/lat/lon split from the array) - 10\%
+\end{itemize}
+
+% --- GRADING ---
+\section{Grading}
+This assignment is graded on completion of the checklist above. Each item is worth the percentage listed next to it, and the items add up to 100\% of your grade on this assignment.
+
+\end{document}
